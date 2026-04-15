@@ -94,6 +94,7 @@ function buildSidebar() {
       { icon: '🚚', label: 'Logistics', page: 'logistics' },
       { icon: '📢', label: 'Marketing', page: 'marketing' },
       { icon: '🔐', label: 'Verification', page: 'verify' },
+      { icon: '📦', label: 'Tracking', page: 'tracking' },
     ],
     supplier: [
       { icon: '📊', label: 'Dashboard', page: 'dashboard' },
@@ -102,6 +103,7 @@ function buildSidebar() {
       { icon: '🔗', label: 'Supply Chain', page: 'supply-chain' },
       { icon: '📢', label: 'Marketing', page: 'marketing' },
       { icon: '🔐', label: 'Verification', page: 'verify' },
+      { icon: '📦', label: 'Tracking', page: 'tracking' },
     ],
     logistics: [
       { icon: '📊', label: 'Dashboard', page: 'dashboard' },
@@ -129,6 +131,7 @@ const PAGE_TITLES = {
   logistics: '🚚 Logistics',
   marketing: '📢 Marketing',
   verify: '🔐 Verification',
+  tracking: '📦 Product Tracking',
 };
 
 function navigateTo(page) {
@@ -152,6 +155,7 @@ function navigateTo(page) {
     logistics: loadLogistics,
     marketing: loadMarketing,
     verify: loadVerify,
+    tracking: loadTrackingPage,
   };
 
   (loaders[page] || (() => { container.innerHTML = '<p>Page not found</p>'; }))();
@@ -1019,7 +1023,9 @@ async function loadMarketing() {
           <option value="instagram">📸 Instagram</option>
           <option value="ad">📰 Ad Copy</option>
         </select>
-        <button class="btn btn-primary" onclick="runMarketing()">✨ Generate Promotion</button>
+        <button class="btn btn-accent" onclick="runAdvancedMarketing()">
+  🤖 Advanced AI Insights
+</button>
 
         <div style="margin-top:20px">
           <div class="section-title">💡 Quick Ideas</div>
@@ -1118,6 +1124,41 @@ async function loadVerify() {
           `).join('')}
         </div>
       </div>
+    </div>
+  `;
+}
+function loadTrackingPage() {
+  const container = document.getElementById('page-container');
+
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <h3>📦 Product Tracking</h3>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:15px">
+        <input 
+          type="text" 
+          id="trackInput" 
+          placeholder="Enter Product ID (e.g. p1)"
+          style="
+            flex:1;
+            height:45px;
+            padding:0 12px;
+            border-radius:10px;
+            border:1px solid #333;
+            background:#1a1a1a;
+            color:#fff;
+          "
+        >
+        <button class="btn btn-primary" onclick="loadTracking()" style="width:120px">
+          Track
+        </button>
+      </div>
+
+      <p style="color:gray;font-size:12px">Try: p1</p>
+
+      <div id="trackingResult"></div>
     </div>
   `;
 }
@@ -1229,4 +1270,103 @@ function copyText(btn, text) {
     btn.textContent = 'Copied!';
     setTimeout(() => btn.textContent = orig, 1500);
   });
+}
+async function loadTracking() {
+  const productId = document.getElementById("trackInput").value;
+  const container = document.getElementById("trackingResult");
+
+  container.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`${API}/tracking/${productId}`);
+    const data = await res.json();
+
+    container.innerHTML = `<div class="timeline"></div>`;
+    const timeline = container.querySelector(".timeline");
+
+    data.history.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "tracking-step";
+
+      div.innerHTML = `
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-title">✔ ${item.stage}</div>
+          <div class="timeline-status">${item.status}</div>
+          <div class="timeline-time">${item.time}</div>
+        </div>
+      `;
+
+      timeline.appendChild(div);
+    });
+
+  } catch (err) {
+    container.innerHTML = "❌ No tracking found";
+  }
+}
+async function runAdvancedMarketing() {
+  const productId = val('m-product');
+  const platform = val('m-platform');
+
+  if (!productId) {
+    showToast("Select a product", "error");
+    return;
+  }
+
+  try {
+    // 🔹 Step 1: Get full product details
+    const product = await get(`/products?owner_id=${currentUser.id}`);
+    const selected = product.find(p => p.id === productId);
+
+    if (!selected) {
+      showToast("Product not found", "error");
+      return;
+    }
+
+    // 🔹 Step 2: Convert to backend format
+    const payload = [
+      {
+        name: selected.name,
+        quantity: selected.quantity,
+        cost_price: selected.price * 0.7, // temporary logic
+        selling_price: selected.price
+      }
+    ];
+
+    // 🔹 Step 3: Call YOUR FastAPI AI
+    const res = await fetch(`${API}/auto-marketing`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    // 🔹 Step 4: Render in your UI style
+    const el = document.getElementById("mkt-output");
+
+    el.innerHTML = `
+      <div class="card">
+        <h3>📢 AI Marketing Insights</h3>
+
+        <div class="section-title">🔥 Messages</div>
+        ${data.messages.map(m => `<div class="msg-card">${m}</div>`).join("")}
+
+        <div class="section-title">💡 Recommendations</div>
+        ${data.recommendations.map(r => `<div class="rec">${r}</div>`).join("")}
+
+        <div class="section-title">📊 Insights</div>
+        ${data.insights.map(i => `<div class="insight">${i}</div>`).join("")}
+
+        <div class="section-title">🚀 Campaign Ideas</div>
+        ${data.campaigns.map(c => `<div class="campaign">${c}</div>`).join("")}
+      </div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    showToast("AI failed", "error");
+  }
 }

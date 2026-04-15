@@ -943,3 +943,102 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .page { display: none; }
 .page.active { display: block; }
+.tracking-box {
+  background: white;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.tracking-step {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  padding: 10px;
+  border-left: 4px solid #4CAF50;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.tracking-step span {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.tracking-time {
+  font-size: 12px;
+  color: gray;
+}
+.timeline {
+  position: relative;
+  margin-top: 20px;
+  padding-left: 30px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #333;
+}
+
+.tracking-step {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  background: #4CAF50;
+  border-radius: 50%;
+  position: absolute;
+  left: -20px;
+  top: 5px;
+  box-shadow: 0 0 10px #4CAF50;
+}
+
+.timeline-content {
+  background: #1a1a1a;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  width: 100%;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #fff;
+}
+
+.timeline-status {
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.timeline-time {
+  color: #666;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

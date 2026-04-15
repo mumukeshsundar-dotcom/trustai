@@ -410,7 +410,35 @@ def supply_chain(product_id: str):
     return [dict(e) for e in events]
 
 # ─── AI ──────────────────────────────────────────────────────────────────────
+@app.get("/tracking/{product_id}")
+def get_tracking(product_id: str):
+    db = get_db()
 
+    rows = db.execute("""
+        SELECT event, actor_role, timestamp
+        FROM supply_chain
+        WHERE product_id=?
+        ORDER BY timestamp ASC
+    """, (product_id,)).fetchall()
+
+    db.close()
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="No tracking found")
+
+    # Convert to required format
+    history = []
+    for r in rows:
+        history.append({
+            "stage": r["actor_role"].capitalize(),
+            "status": r["event"],
+            "time": r["timestamp"]
+        })
+
+    return {
+        "product_id": product_id,
+        "history": history
+    }
 @app.post("/analyze")
 def analyze_business(user_id: str):
     db = get_db()
